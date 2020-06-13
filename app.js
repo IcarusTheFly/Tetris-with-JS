@@ -1,25 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const grid = document.querySelector('.grid');
   let squares = Array.from(document.querySelectorAll('.grid div'));
-  const scoreDisplay = document.querySelector('#score');
-  const startBtn = document.querySelector('#start-button');
-  const width = 10;
-  let nextRandom = 0;
-  let timerId;
-  let score = 0;
-  const colors = [
-    'orange',
-    'red',
-    'purple',
-    'green',
-    'blue'
-  ];
+  const grid = document.querySelector('.grid'),
+    scoreDisplay = document.querySelector('#score'),
+    startBtn = document.querySelector('#start-button'),
+    displaySquares = document.querySelectorAll('.mini-grid div'),
+    width = 10,
+    displayWidth = 4,
+    displayIndex = 0,
+    colors = [
+      'orange',
+      'red',
+      'purple',
+      'green',
+      'blue'
+    ];
 
-  // Tetrominoes definition
+  // Defining tetrominoes
   const lTetromino = [
       [1, width + 1, width * 2 + 1, 2],
       [width, width + 1, width + 2, width * 2 + 2],
-
       [1, width + 1, width * 2 + 1, width * 2],
       [width, width * 2, width * 2 + 1, width * 2 + 2]
     ],
@@ -46,24 +45,33 @@ document.addEventListener('DOMContentLoaded', () => {
       [width, width + 1, width + 2, width + 3],
       [1, width + 1, width * 2 + 1, width * 3 + 1],
       [width, width + 1, width + 2, width + 3]
+    ],
+    tetrominoes = [lTetromino, zTetromino, tTetromino, oTetromino, iTetromino],
+
+    // First rotations of tetrominoes to display
+    upNextTetrominos = [
+      [1, displayWidth + 1, displayWidth * 2 + 1, 2],
+      [displayWidth * 2, displayWidth + 1, displayWidth * 2 + 1, displayWidth + 2],
+      [displayWidth, 1, displayWidth + 1, displayWidth + 2],
+      [0, displayWidth, 1, displayWidth + 1],
+      [1, displayWidth + 1, displayWidth * 2 + 1, displayWidth * 3 + 1]
     ];
 
-  const tetrominoes = [lTetromino, zTetromino, tTetromino, oTetromino, iTetromino];
-
-  let currentPosition = 4,
+  // Randomly select a tetromino
+  let random = Math.floor(Math.random() * tetrominoes.length),
+    current = tetrominoes[random][0],
+    nextRandom = 0,
+    timerId,
+    score = 0,
+    currentPosition = 4,
     currentRotation = 0;
-
-  // show up-next tetromino in mini-grid display
-  const displaySquares = document.querySelectorAll('.mini-grid div');
-  const displayWidth = 4;
-  const displayIndex = 0;
 
   // Draw the Tetromino
   function draw() {
     current.forEach(index => {
       squares[currentPosition + index].classList.add('tetromino');
       squares[currentPosition + index].style.backgroundColor = colors[random];
-    })
+    });
   }
 
   // Undraw the Tetromino
@@ -71,10 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
     current.forEach(index => {
       squares[currentPosition + index].classList.remove('tetromino');
       squares[currentPosition + index].style.backgroundColor = '';
-    })
+    });
   }
 
-  // Move down function
+  // Move down the Tetromino
   function moveDown() {
     undraw();
     currentPosition += width;
@@ -133,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentRotation === current.length) { // If the current rotation gets to 4, make it go back to 0
       currentRotation = 0;
     }
-    current = tetrominoes[random][currentRotation]
+    current = tetrominoes[random][currentRotation];
     draw();
   }
 
@@ -144,43 +152,35 @@ document.addEventListener('DOMContentLoaded', () => {
         moveLeft();
         break;
       case 38:
-        rotate()
+        rotate();
         break;
       case 39:
-        moveRight()
+        moveRight();
         break;
       case 40:
-        moveDown()
+        moveDown();
         break;
     }
   }
   document.addEventListener('keyup', control);
 
-  // The tetrominos without rotations
-  const upNextTetrominos = [
-    [1, displayWidth + 1, displayWidth * 2 + 1, 2],
-    [displayWidth * 2, displayWidth + 1, displayWidth * 2 + 1, displayWidth + 2],
-    [displayWidth, 1, displayWidth + 1, displayWidth + 2],
-    [0, displayWidth, 1, displayWidth + 1],
-    [1, displayWidth + 1, displayWidth * 2 + 1, displayWidth * 3 + 1]
-  ];
-
-  // Display the shape in the mini-grid display
+  // Display the shape of next tetromino in the mini-grid display
   function displayShape() {
     displaySquares.forEach(square => {
       square.classList.remove('tetromino');
       square.style.backgroundColor = '';
     });
+
     upNextTetrominos[nextRandom].forEach(index => {
       displaySquares[displayIndex + index].classList.add('tetromino');
       displaySquares[displayIndex + index].style.backgroundColor = colors[nextRandom];
     });
   }
 
-  // Add functionality to the button
+  // Add functionality to the Start/Pause button
   startBtn.addEventListener('click', () => {
     if (timerId) {
-      clearInterval(timerId)
+      clearInterval(timerId);
       timerId = null;
     } else {
       draw();
@@ -201,11 +201,10 @@ document.addEventListener('DOMContentLoaded', () => {
         row.forEach(index => {
           squares[index].classList.remove('taken');
           squares[index].classList.remove('tetromino');
-          squares[index].style.backgroundColor = '' ;
+          squares[index].style.backgroundColor = '';
         });
 
         const squaresRemoved = squares.splice(i, width);
-        console.log(squaresRemoved);
         squares = squaresRemoved.concat(squares);
         squares.forEach(cell => grid.appendChild(cell));
       }
@@ -219,22 +218,4 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(timerId);
     }
   }
-
-  // MAIN PROCESS
-  // Randomly select a tetromino
-  let random = Math.floor(Math.random() * tetrominoes.length);
-  // let randomRotation = Math.floor(Math.random() * 3); // For testing
-  console.log(random);
-  let current = tetrominoes[random][0];
-
-
-  // Make the tetromino move down every second
-  // Don't start until we press down the Start/Pause button
-  // draw();
-  //timerId = setInterval(moveDown, 1000);
-
-
-  // LOGS
-  console.log(squares);
-  console.log(tetrominoes);
 });
